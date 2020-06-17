@@ -15,8 +15,6 @@ from sklearn.preprocessing import StandardScaler
 import pickle
 import time
 
-from qualities import accuracy
-
 
 def nn_shallow(X_train, y_train, X_test, y_test):
     model = keras.Sequential()
@@ -26,7 +24,6 @@ def nn_shallow(X_train, y_train, X_test, y_test):
 
     # Add one hidden layer
     model.add(Dense(18, activation=tf.nn.relu))
-    #model.add(Dense(36, activation=tf.nn.relu))
 
     # Add an output layer
     model.add(Dense(1))
@@ -49,14 +46,16 @@ def nn_shallow(X_train, y_train, X_test, y_test):
     mse = mean_squared_error(y_test, y_pred, squared=True)
     mae = median_absolute_error(y_test, y_pred)
 
-
-    model.save('quick_nn.h5')
+    model_json = model.to_json()
+    with open("small_model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("small_model.h5")
 
 
     return {'name': 'quick regression', "training  cost: ": training_cost, "inference cost: ": inference_cost,
             "mse": mse, "mae": mae}
 
-    return None
 
 
 def nn_long(X_train, y_train, X_test, y_test):
@@ -65,7 +64,7 @@ def nn_long(X_train, y_train, X_test, y_test):
     # Add an input layer
     model.add(Dense(36, activation=tf.nn.relu, input_shape=(36,)))
 
-    # Add one hidden layer
+    # Add 4 hidden layers
     model.add(Dense(36, activation=tf.nn.relu))
     model.add(Dense(36, activation=tf.nn.relu))
     model.add(Dense(36, activation=tf.nn.relu))
@@ -86,20 +85,24 @@ def nn_long(X_train, y_train, X_test, y_test):
 
     start = time.time()
     y_pred = model.predict(X_test)
-    #print(y_pred)
+
     inference_cost = (time.time() - start) * 50000 / len(y_pred)
 
     # accuracy operationalized
     mse = mean_squared_error(y_test, y_pred, squared=True)
     mae = median_absolute_error(y_test, y_pred)
 
-    model.save('large_nn.h5')
+    model_json = model.to_json()
+    with open("large_model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("large_model.h5")
+
 
     return {'name': 'long nn regression', "training  cost: ": training_cost, "inference cost: ": inference_cost,
             "mse": mse, "mae": mae}
 
 
-    return None
 
 
 # random forest regression
@@ -119,17 +122,17 @@ def rf_regression(X_train, y_train, X_test, y_test):
     mse = mean_squared_error(y_test, y_pred, squared=True)
     mae = median_absolute_error(y_test, y_pred)
 
-    within = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
-    for i in range(len(y_pred)):
-        error = abs(y_pred[i] - y_test[i])
-        for j in range(10):
-            if error < j+1:
-                within[j+1] += 1
+    #within = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0}
+    #for i in range(len(y_pred)):
+    #    error = abs(y_pred[i] - y_test[i])
+    #    for j in range(10):
+    #        if error < j+1:
+    #            within[j+1] += 1
 
-    for key in within:
-        within[key] = within[key] / len(y_pred)
+    #for key in within:
+    #    within[key] = within[key] / len(y_pred)
 
-    import matplotlib.pylab as plt
+    #import matplotlib.pylab as plt
 
     #lists = sorted(within.items())  # sorted by key, return a list of tuples
 
@@ -145,7 +148,6 @@ def rf_regression(X_train, y_train, X_test, y_test):
     return {'name': 'rf regression', "training  cost: ": training_cost, "inference cost: ": inference_cost,
             "mse": mse, "mae": mae}
 
-    return None
 
 
 def heat_map(data):
